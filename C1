@@ -1,0 +1,9 @@
+using contador,z,y of type integer ; x,w,j of type canvas ; q,f of type boolean begin
+{- Asignar al contador 
+el valor 35. -}
+contador:=0;
+z:=7; 
+with j from -z to z repeat
+contador:=contador+1
+done
+end

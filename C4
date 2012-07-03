@@ -1,0 +1,18 @@
+using x, y of type integer; c,d,j of type canvas begin
+x := 10 ;
+y := 15 ;
+c := <empty> ;
+j := </>:<\>;
+from 1 to x repeat
+d := <empty> ;
+with j from -10 to -y repeat
+if j % 2 = 0 then
+d := d : </>
+else
+d := d : <\>
+done
+done ;
+c := c | d
+done ;
+print c
+end
