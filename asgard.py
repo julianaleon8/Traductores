@@ -1159,10 +1159,10 @@ contador = 0
 temp = []
 
 def p_expr(p):
-	''' expr : 	TkUsing Declar TkBegin expr TkEnd
-				| TkBegin expr TkEnd
+	''' expr : TkUsing Declar TkBegin instr TkEnd
 				| expr TkPuntoYComa expr 
-				| instr '''
+				| TkBegin instr TkEnd
+				  '''
 	global contador
 	global temp
 	if len(p) == 4:
@@ -1191,10 +1191,11 @@ def p_expr(p):
 
 def p_Declar(p):
 	''' Declar : Declar TkComa TkIdent TkOfType Tipo
-				  | Declar TkComa TkIdent
 				  | TkIdent TkOfType Tipo
 				  | Declar TkPuntoYComa Declar 
-				  | TkIdent '''
+				  | TkIdent 
+				  | Declar TkComa TkIdent'''	
+				  
 	global temp
 	global contador
 	cont = 0
@@ -1265,16 +1266,27 @@ def p_Tipo(p):
 				| TkCanvas '''
 	p[0] = p[1]
 
+def p_InNum(p):
+	''' InNum : TkNum
+				 | TkIdent '''
+	p[0] = p[1]
+	
 def p_instr(p):
-	'''instr : TkIdent TkAsignacion booleana
-		 	   | TkIf booleana TkThen expr TkElse expr TkDone
-		 	   | TkIf booleana TkThen expr TkDone
-		 	   | TkWhile booleana TkRepeat expr TkDone
-		 	   | TkWith TkIdent TkFrom arit TkTo arit TkRepeat expr TkDone
-		 	   | TkFrom arit TkTo arit TkRepeat expr TkDone 
+	'''instr : 	    instr TkPuntoYComa instr
+		
+			   | TkIdent TkAsignacion expbin
+		 	   | TkIf booleana TkThen instr TkElse expr TkDone
+		 	   | TkIf booleana TkThen instr TkDone
+		 	   | TkWhile booleana TkRepeat instr TkDone
+		 	   | TkWith TkIdent TkFrom InNum TkTo InNum TkRepeat expr TkDone
+		 	   | TkFrom InNum TkTo InNum TkRepeat instr TkDone 
 		 	   | TkPrint TkIdent
 		 	   | TkPrint TkLienzo
-		 	   | TkRead TkIdent  '''
+		 	
+		 	   | TkRead TkIdent 
+		 	   | TkUsing Declar TkBegin instr TkEnd
+			   | TkBegin instr TkEnd
+		'''
 
 	if (len(p)== 4):
 	    if (p[2] == ':='):
@@ -1328,6 +1340,11 @@ def p_arit(p):
 	else:
 		p[0] = p[1]
 
+def p_expbin(p):
+	''' expbin : arit
+	  		  	  | booleana
+			  	  | lienzo '''
+	p[0] = p[1]
 
 def p_booleana(p):
 	''' booleana : booleana operatorB booleana
@@ -1385,7 +1402,7 @@ def p_lienzo(p):
 		   	  | TkRot lienzo 
 		   	  | lienzo TkTras 
 		   	  | TkLienzo
-		   	  | arit '''
+		   	  | TkIdent '''
 
 	if len(p) == 4:
 		if p[2] == ':':
