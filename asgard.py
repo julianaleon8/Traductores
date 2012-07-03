@@ -930,11 +930,44 @@ def run(exp):
 				for j in range(len(prb[i])):
 					fin.append(prb[i][j])
 				fin.append('\n')
+			del fin[-1]
 			return fin
-			
-				
 		if(isinstance(exp,Rota)):
-			pass
+			aux = exp.op1
+			if(isinstance(aux,OpBin) or isinstance(aux,OpUn)):
+				f1 = run(aux)
+			else:
+				if(tabla.has_key(aux)):
+					temp = tabla[aux]
+					f1 = temp[2]
+				else:
+					f1 = temp[2]
+					return f1
+			res = []
+			fin = []
+			prb = []
+			for i in f1:
+				if(i == '\n'):
+					res.append(prb)
+					prb = []
+				else:
+					prb.append(i)
+			res.append(prb)
+			prb = []
+			for i in range(len(res[0])):
+				prb.append([])
+			for i in range(len(prb)):
+				for j in range(len(res)):
+					prb[i].append(',')
+			for i in range(len(res)):
+				for j in range(len(res[0])):
+					prb[j][i] = res[len(res)-i-1][j]
+			for i in range(len(prb)):
+				for j in range(len(prb[i])):
+					fin.append(prb[i][j])
+				fin.append('\n')
+			del fin[-1]
+			return fin
 	elif(isinstance(exp,Asig)):
 		temp = exp.iden
 		temp2 = exp.ex1
