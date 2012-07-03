@@ -130,9 +130,6 @@ t_TkRot = r'\$'
 t_TkTras = r'\''
 t_TkAsignacion = r':='
 
-# contruir el analizador lexico
-lexer=lex.lex(debug=0)
-archi = sys.stdin.read()
 
 #----------------#
 # Precedencia	 #
@@ -343,109 +340,105 @@ def evaluar(arbol):
 	if (isinstance(arbol, Impre)):
 		aux1 = arbol.expr1
 		aux2 = arbol.expr2
-		if(isinstance(aux1, Impre_uni) or isinstance(aux1,Impre)):
-			evaluar(aux1)
-		if(isinstance(aux2,Impre) or isinstance(aux2,Impre_uni)):
-			evaluar(aux2)
-			
-	elif(isinstance(arbol,Impre_uni)):
-		aux = arbol.expr
-		if(isinstance(aux,Asig)):
-			aux2 = aux.ex1
-			aux1 = aux.iden
-			temp2 = Tipo(aux1)
-			temp3 = calcularExprBin(aux2)
-			if(temp2 == temp3):
-				run(aux)
+		evaluar(aux1)
+		evaluar(aux2)
+		
+	elif(isinstance(arbol,Asig)):
+		aux2 = arbol.ex1
+		aux1 = arbol.iden
+		temp2 = Tipo(aux1)
+		temp3 = calcularExprBin(aux2)
+		if(temp2 == temp3):
+			run(arbol)
+		else:
+			print 'error de tipo {0}'.format(temp2)
+	elif(isinstance(arbol,IfElse)):
+		aux1 = arbol.boolean
+		aux2 = arbol.ex1
+		aux3 = arbol.ex2
+		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
+			temp = calcularExprBin(aux1)
+		else:
+			temp = Tipo(aux1)
+		if(temp == 'boolean'):
+			run(arbol)
+		else:
+			print 'error de tipo {0}'.format(temp)
+	elif(isinstance(arbol,IfS)):
+		aux1 = arbol.boolean
+		aux2 = arbol.ex1
+		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
+			temp = calcularExprBin(aux1)
+		else:
+			temp = Tipo(aux1)
+		if(temp == 'boolean'):
+			run(arbol)
+		else:
+			print 'error de tipo {0}'.format(temp)
+	elif(isinstance(arbol,While)):
+		aux1 = arbol.boolean
+		aux2 = arbol.ex1
+		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
+			temp = calcularExprBin(aux1)
+		else:
+			temp = Tipo(aux1)
+		if(temp == 'boolean'):
+				run(arbol)
+		else:
+			print 'error de tipo {0}'.format(temp)
+	elif(isinstance(arbol,Read)):
+		temp = arbol.iden
+		if(tabla.has_key(temp)):
+			aux1 = Tipo(temp)
+			if(aux1 == 'integer'):
+				run(arbol)
 			else:
-				print 'error de tipo {0}'.format(temp2)
-		elif(isinstance(aux,IfElse)):
-			aux1 = aux.boolean
-			aux2 = aux.ex1
-			aux3 = aux.ex2
-			if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
-				temp = calcularExprBin(aux1)
-			else:
-				temp = Tipo(aux1)
-			if(temp == 'boolean'):
-				run(aux)
-			else:
-				print 'error de tipo {0}'.format(temp)
-		elif(isinstance(aux,IfS)):
-			aux1 = aux.boolean
-			aux2 = aux.ex1
-			if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
-				temp = calcularExprBin(aux1)
-			else:
-				temp = Tipo(aux1)
-			if(temp == 'boolean'):
-				run(aux)
-			else:
-				print 'error de tipo {0}'.format(temp)
-		elif(isinstance(aux,While)):
-			aux1 = aux.boolean
-			aux2 = aux.ex1
-			if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
-				temp = calcularExprBin(aux1)
-			else:
-				temp = Tipo(aux1)
-			if(temp == 'boolean'):
-					run(aux)
-			else:
-				print 'error de tipo {0}'.format(temp)
-		elif(isinstance(aux,Read)):
-			temp = aux.iden
-			if(tabla.has_key(temp)):
-				aux1 = Tipo(temp)
-				if(aux1 == 'integer'):
-					run(aux)
-				else:
-					print 'La variable1 [{0}] debe ser de tipo entera'.format(temp)
-					exit(1)
-			else:
-				print 'errorde sintaxis {0} no fue declarada'.format(temp)
+				print 'La variable1 [{0}] debe ser de tipo entera'.format(temp)
 				exit(1)
-		elif(isinstance(aux,Print)):
-			temp = aux.iden
-			if(temp[0] != '<'):
-				if(tabla.has_key(temp)):
-					temp1 = Tipo(temp)
-					if(temp1 == 'canvas'):
-						run(aux)
-					else:
-						print 'La variable [{0}] debe ser de tipo canvas'.format(temp)
-						exit(1)
-				else:
-					print 'error de sintaxis2 {0} no fue declarada'.format(temp)
-					exit(1)	
-			else:
-				run(aux)
-		elif(isinstance(aux,With)):
-			temp = aux.iden
-			temp2 = aux.num1
-			temp3 = aux.num2
+		else:
+			print 'errorde sintaxis {0} no fue declarada'.format(temp)
+			exit(1)
+	elif(isinstance(arbol,Print)):
+		temp = arbol.iden
+		if(temp[0] != '<'):
 			if(tabla.has_key(temp)):
-				if(Tipo(temp) == Tipo(temp2) == Tipo(temp3) == 'integer'):
-					run(aux)
-				elif(Tipo(temp) != 'integer'):
-					print 'La variable [{0}] debe ser de tipo entera'.format(temp)
-					exit(1)
-				elif(Tipo(temp2) != integer):
-					print 'La variable [{0}] debe ser de tipo entera'.format(temp2)
-					exit(1)
-				elif(Tipo(temp) != 'integer'):
-					print 'La variable [{0}] debe ser de tipo entera'.format(temp3)
+				temp1 = Tipo(temp)
+				if(temp1 == 'canvas'):
+					run(arbol)
+				else:
+					print 'La variable [{0}] debe ser de tipo canvas'.format(temp)
 					exit(1)
 			else:
-				print 'error de sintaxis3 {0} no fue declarada'.format(p[2])
+				print 'error de sintaxis2 {0} no fue declarada'.format(temp)
+				exit(1)	
+		else:
+			run(aux)
+	elif(isinstance(arbol,With)):
+		temp = arbol.iden
+		temp2 = arbol.num1
+		temp3 = arbol.num2
+		if(tabla.has_key(temp)):
+			if(Tipo(temp) == Tipo(temp2) == Tipo(temp3) == 'integer'):
+				run(arbol)
+			elif(Tipo(temp) != 'integer'):
+				print 'La variable [{0}] debe ser de tipo entera'.format(temp)
 				exit(1)
-		elif(isinstance(aux,Fro)):
-			temp = aux.num1
-			temp2 = aux.num2
-			if(Tipo(temp) == Tipo(temp2) == 'integer'):
-				run(aux)
-			else:
-				print 'Los limites deben ser de tipo integer'
+			elif(Tipo(temp2) != integer):
+				print 'La variable [{0}] debe ser de tipo entera'.format(temp2)
+				exit(1)
+			elif(Tipo(temp) != 'integer'):
+				print 'La variable [{0}] debe ser de tipo entera'.format(temp3)
+				exit(1)
+		else:
+			print 'error de sintaxis3 {0} no fue declarada'.format(p[2])
+			exit(1)
+	elif(isinstance(arbol,Fro)):
+		temp = arbol.num1
+		temp2 = arbol.num2
+		if(Tipo(temp) == Tipo(temp2) == 'integer'):
+			run(arbol)
+		else:
+			print 'Los limites deben ser de tipo integer'
 		
 	
 
@@ -1131,11 +1124,11 @@ def run(exp):
 			print 'La variable {0} debe ser de tipo booleano'.format(aux)
 			exit(1)
 			
-########################################################
 	elif(isinstance(exp,Read)):
 		aux = exp.iden
 		temp = tabla[aux]
-		temp3 = raw_input(' ')
+		temp3 = raw_input()
+		temp3 = int(temp3)
 		if(type(temp3) == int):
 			temp[2] = temp3
 		else:
@@ -1154,16 +1147,12 @@ def run(exp):
 				sys.stdout.write(i)
 			print 
 		
-#########################################################
 			
 	elif(isinstance(exp,Impre)):
 		a = exp.expr1
 		b = exp.expr2
 		run(a)
 		run(b)
-	elif(isinstance(exp,Impre_uni)):
-		a = exp.expr
-		run(a)
 	else:
 		if(tabla.has_key(exp)):
 			temp = tabla[exp]
@@ -1192,10 +1181,10 @@ contador = 0
 temp = []
 
 def p_expr(p):
-	''' expr : 	TkUsing Declar TkBegin expr TkEnd
-				| TkBegin expr TkEnd
+	''' expr : TkUsing Declar TkBegin instr TkEnd
 				| expr TkPuntoYComa expr 
-				| instr '''
+				| TkBegin instr TkEnd
+				  '''
 	global contador
 	global temp
 	if len(p) == 4:
@@ -1224,10 +1213,11 @@ def p_expr(p):
 
 def p_Declar(p):
 	''' Declar : Declar TkComa TkIdent TkOfType Tipo
-				  | Declar TkComa TkIdent
 				  | TkIdent TkOfType Tipo
 				  | Declar TkPuntoYComa Declar 
-				  | TkIdent '''
+				  | TkIdent 
+				  | Declar TkComa TkIdent'''	
+				  
 	global temp
 	global contador
 	cont = 0
@@ -1298,16 +1288,25 @@ def p_Tipo(p):
 				| TkCanvas '''
 	p[0] = p[1]
 
+def p_InNum(p):
+	''' InNum : TkNum
+				 | TkIdent '''
+	p[0] = p[1]
+	
 def p_instr(p):
-	'''instr : TkIdent TkAsignacion booleana
-		 	   | TkIf booleana TkThen expr TkElse expr TkDone
-		 	   | TkIf booleana TkThen expr TkDone
-		 	   | TkWhile booleana TkRepeat expr TkDone
-		 	   | TkWith TkIdent TkFrom arit TkTo arit TkRepeat expr TkDone
-		 	   | TkFrom arit TkTo arit TkRepeat expr TkDone 
+	'''instr : 	instr TkPuntoYComa instr
+			   | TkIdent TkAsignacion expbin
+		 	   | TkIf booleana TkThen instr TkElse instr TkDone
+		 	   | TkIf booleana TkThen instr TkDone
+		 	   | TkWhile booleana TkRepeat instr TkDone
+		 	   | TkWith TkIdent TkFrom InNum TkTo InNum TkRepeat instr TkDone
+		 	   | TkFrom InNum TkTo InNum TkRepeat instr TkDone 
 		 	   | TkPrint TkIdent
 		 	   | TkPrint TkLienzo
-		 	   | TkRead TkIdent  '''
+		 	   | TkRead TkIdent 
+		 	   | TkUsing Declar TkBegin instr TkEnd
+			   | TkBegin instr TkEnd
+		'''
 
 	if (len(p)== 4):
 	    if (p[2] == ':='):
@@ -1316,6 +1315,8 @@ def p_instr(p):
 	    	else:
 	    		print 'errorde sintaxis {0} no fue declarada'.format(p[1])
 	    		exit(1)	
+	    elif(p[2] == ';'):
+			p[0] = Impre(p[1],p[3])
 	elif(len(p) == 8):
 	    if(p[1] == 'if'):
 	    	p[0] = IfElse(p[2],p[4],p[6])
@@ -1361,6 +1362,11 @@ def p_arit(p):
 	else:
 		p[0] = p[1]
 
+def p_expbin(p):
+	''' expbin : arit
+	  		  	  | booleana
+			  	  | lienzo '''
+	p[0] = p[1]
 
 def p_booleana(p):
 	''' booleana : booleana operatorB booleana
@@ -1418,7 +1424,7 @@ def p_lienzo(p):
 		   	  | TkRot lienzo 
 		   	  | lienzo TkTras 
 		   	  | TkLienzo
-		   	  | arit '''
+		   	  | TkIdent '''
 
 	if len(p) == 4:
 		if p[2] == ':':
@@ -1471,9 +1477,16 @@ def p_error(p):
 	print "Error de sintaxis " + p.type +" " +  p.value
 	exit(1)
 
+lexer=lex.lex(debug=0)
 parser = yacc.yacc()
-arbol = parser.parse(archi)
-evaluar(arbol)
+if(len(sys.argv) < 2):
+	print 'Numero de argumentos invalidos'
+else:
+	fil = sys.argv[1]
+	fil = open(fil,"r")
+	archi = fil.read()
+	arbol = parser.parse(archi)
+	evaluar(arbol)
 #print tabla
 #print arbol
 
