@@ -4,6 +4,14 @@ el valor 35. -}
 contador:=0;
 z:=7; 
 with j from -z to z repeat
-contador:=contador+1
+using j of type canvas begin
+q :=5 ;
+contador:=contador+1;
+with j from z to z+2 repeat
+using j of type integer begin
+j:=55
+end
+done
+end
 done
 end
