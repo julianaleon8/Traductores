@@ -1040,7 +1040,6 @@ def run(exp):
 			del fin[-1]
 			return fin
 	elif(isinstance(exp,Asig)):
-		evaluar(exp)
 		temp = exp.iden
 		temp2 = exp.ex1
 		p1 = calcularExprBin(temp2)
@@ -1050,7 +1049,7 @@ def run(exp):
 			temp3 = run(temp2)
 			temp4[2] = temp3
 		else:
-			print 'error de tipo'
+			print 'error de tipo {0}'.format(temp4[0])
 			exit(1)
 	elif(isinstance(exp,IfElse)):
 		temp = exp.boolean
