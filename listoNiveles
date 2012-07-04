@@ -347,7 +347,7 @@ def mover(aux):
 	count = contador
 	temp = aux
 	
-	if(temp[1] == -2):
+	if(temp[1] == -(contador*2)-1):
 		print 'La variable no puede ser reasignable'
 		exit(1)
 	else:	
@@ -383,7 +383,7 @@ def evaluar(arbol):
 		temp2 = Tipo(aux1)
 		temp3 = calcularExprBin(aux2)
 		if(temp2 == temp3):
-			run(arbol)
+			pass
 		else:
 			print 'error de tipo {0}'.format(temp2)
 	elif(isinstance(arbol,IfElse)):
@@ -395,7 +395,7 @@ def evaluar(arbol):
 		else:
 			temp = Tipo(aux1)
 		if(temp == 'boolean'):
-			run(arbol)
+			pass
 		else:
 			print 'error de tipo {0}'.format(temp)
 	elif(isinstance(arbol,IfS)):
@@ -406,7 +406,7 @@ def evaluar(arbol):
 		else:
 			temp = Tipo(aux1)
 		if(temp == 'boolean'):
-			run(arbol)
+			pass
 		else:
 			print 'error de tipo {0}'.format(temp)
 	elif(isinstance(arbol,While)):
@@ -417,7 +417,7 @@ def evaluar(arbol):
 		else:
 			temp = Tipo(aux1)
 		if(temp == 'boolean'):
-				run(arbol)
+				pass
 		else:
 			print 'error de tipo {0}'.format(temp)
 	elif(isinstance(arbol,Read)):
@@ -425,7 +425,7 @@ def evaluar(arbol):
 		if(tabla.has_key(temp)):
 			aux1 = Tipo(temp)
 			if(aux1 == 'integer'):
-				run(arbol)
+				pass
 			else:
 				print 'La variable1 [{0}] debe ser de tipo entera'.format(temp)
 				exit(1)
@@ -438,7 +438,7 @@ def evaluar(arbol):
 			if(tabla.has_key(temp)):
 				temp1 = Tipo(temp)
 				if(temp1 == 'canvas'):
-					run(arbol)
+					pass
 				else:
 					print 'La variable [{0}] debe ser de tipo canvas'.format(temp)
 					exit(1)
@@ -457,7 +457,7 @@ def evaluar(arbol):
 			temp3 = calcularExprBin(temp3)
 		if(tabla.has_key(temp)):
 			if(Tipo(temp) == Tipo(temp2) == Tipo(temp3) == 'integer'):
-				run(arbol)
+				pass
 			elif(Tipo(temp) != 'integer'):
 				print 'La variable [{0}] debe ser de tipo entera'.format(temp)
 				exit(1)
@@ -478,12 +478,12 @@ def evaluar(arbol):
 		if(isinstance(temp,OpBin) or isinstance(temp,OpUn)):
 			temp = calcularExprBin(temp)
 		if(Tipo(temp) == Tipo(temp2) == 'integer'):
-			run(arbol)
+			pass
 		else:
 			print 'Los limites deben ser de tipo integer'
 	elif(isinstance(arbol,Using)):
 		temp = arbol.iden
-		run(temp)
+		pass
 			
 	
 
@@ -728,17 +728,41 @@ def run(exp):
 		if(isinstance(exp,Or)):
 			return eval('f1 or f2')
 		if(isinstance(exp,Menor)):
-			return eval('f1<f2')
+			if(calcularExprBin(exp) == 'boolean'):
+				return eval('f1<f2')
+			else:
+				print 'error de tipo'
+				exit(1)
 		if(isinstance(exp,MenorIg)):
-			return eval('f1<=f2')
+			if(calcularExprBin(exp) == 'boolean'):
+				return eval('f1<=f2')
+			else:
+				print 'error de tipo'
+				exit(1)
 		if(isinstance(exp,Mayor)):
-			return eval('f1>f2')
+			if(calcularExprBin(exp) == 'boolean'):
+				return eval('f1>f2')
+			else:
+				print 'error de tipo'
+				exit(1)
 		if(isinstance(exp,MayorIg)):
-			return eval('f1>=f2')
+			if(calcularExprBin(exp) == 'boolean'):
+				return eval('f1>=f2')
+			else:
+				print 'error de tipo'
+				exit(1)
 		if(isinstance(exp,Igual)):
-			return eval('f1 == f2')
+			if(calcularExprBin(exp) == 'boolean'):
+				return eval('f1 == f2')
+			else:
+				print 'error de tipo'
+				exit(1)
 		if(isinstance(exp,Desigual)):
-			return eval('f1 != f2')
+			if(calcularExprBin(exp) == 'boolean'):
+				return eval('f1 != f2')
+			else:
+				print 'error de tipo'
+				exit(1)
 		if(isinstance(exp,ConcatHor)):
 			if(f1[0] == f2[0] == '<'):
 				ret = []
@@ -1016,12 +1040,18 @@ def run(exp):
 			del fin[-1]
 			return fin
 	elif(isinstance(exp,Asig)):
+		evaluar(exp)
 		temp = exp.iden
 		temp2 = exp.ex1
-		temp3 = run(temp2)
+		p1 = calcularExprBin(temp2)
 		temp4 = tabla[temp]
 		temp4 = mover(temp4)
-		temp4[2] = temp3
+		if(temp4[0] == p1):
+			temp3 = run(temp2)
+			temp4[2] = temp3
+		else:
+			print 'error de tipo'
+			exit(1)
 	elif(isinstance(exp,IfElse)):
 		temp = exp.boolean
 		temp1 = exp.ex1
@@ -1037,7 +1067,7 @@ def run(exp):
 			else:
 				run(temp2)
 		else:
-			print 'La variable {0} debe ser de tipo booleano'.format(temp)
+			print 'La expresion {0} debe ser de tipo booleano'.format(temp)
 			exit(1)
 	elif(isinstance(exp,IfS)):
 		temp1 = exp.boolean
@@ -1051,7 +1081,7 @@ def run(exp):
 			if(temp == 'true' or temp == True):
 				run(temp2)
 		else:
-			print 'La variable {0} debe ser de tipo booleano'.format(temp)
+			print 'La expresion {0} debe ser de tipo booleano'.format(temp)
 			exit(1)
 	elif(isinstance(exp,With)):
 		iden = exp.iden
@@ -1065,11 +1095,11 @@ def run(exp):
 			temp6 = run(temp6)	
 		if(tabla.has_key(iden)):
 			guardar = tabla[iden]
-			guardar = mover(guardar)
-			guardar2 = guardar[0]
-			guardar = guardar[2]
+			a = ['integer',-(contador*2)-1,'',guardar]
+			tabla[iden] = a
 			flag = 1
-		tabla[iden] = ['integer',-2,'']
+		else:
+			tabla[iden] = ['integer',-(contador*2)-1,'']
 		if(Tipo(temp6) == Tipo(temp5) == 'integer'):
 			if(tabla.has_key(temp5)):
 				temp1 = tabla[temp5]
@@ -1122,10 +1152,9 @@ def run(exp):
 					print 'Los limites no concuerdan'
 					exit(1)
 			if(flag == 1):
-				guardar3 = tabla[iden]
-				guardar3[2] = guardar
-				guardar3[0] = guardar2
-				tabla[iden] = guardar3
+				guardar = tabla[iden]
+				reponer = guardar[-1]
+				tabla[iden] = reponer
 			else:
 				del tabla[iden]
 			
@@ -1193,7 +1222,7 @@ def run(exp):
 			while(run(aux1) == 'true' or run(aux1) == True):
 				run(aux2)
 		else:
-			print 'La variable {0} debe ser de tipo booleano'.format(aux)
+			print 'La expresion {0} debe ser de tipo booleano'.format(aux)
 			exit(1)
 			
 	elif(isinstance(exp,Read)):
@@ -1357,8 +1386,8 @@ def p_Bloque(p):
 	''' Bloque :  Declar
 			| Bloque TkPuntoYComa Bloque '''
 	global contador
-	p[0]=p[1]
 	contador+=1
+	p[0]=p[1]
 	
 def p_Declar(p):
 	''' Declar : Declar TkComa TkIdent TkOfType Tipo
@@ -1428,12 +1457,11 @@ def p_Declar(p):
 					aux = aux2
 					aux2 = aux[-1]
 				if(aux[1] == contador):
-					print 'variable2 repetida {0}'.format(p[1])
+					print 'variable repetida {0}'.format(p[1])
 					exit(1)
 				else:
 				
-					aux3 = [p[5],contador,'']
-					aux.append(aux3)
+					aux.append(p[1])
 		else:
 					p[0]=p[1]
 def p_Tipo(p):
@@ -1597,8 +1625,8 @@ else:
 	fil = open(fil,"r")
 	archi = fil.read()
 	arbol = parser.parse(archi)
-	contador = 0
-	evaluar(arbol)
+	contador = -1
+	run(arbol)
 print tabla
 #print arbol
 
