@@ -1398,7 +1398,9 @@ def p_Declar(p):
 	elif(len(p) == 6):
 		temp.append(p[3])
 		temp.append(p[1])
+		
 		for i in temp:
+		
 			if(tabla.has_key(i)):
 				aux = tabla[i]
 				aux2 = aux[-1]
@@ -1409,16 +1411,16 @@ def p_Declar(p):
 					print 'variable repetida {0}'.format(i)
 					exit(1)
 				else:
-					
+		
 					aux3 = [p[5],contador,'']
 					aux.append(aux3)
 			else:
-														
-																
-															
+				print 'hola'
+		
 				lista = [p[5],contador,'']
 				tabla[i] = lista
-			temp = []
+			
+		temp = []
 
 	else:
 		if(tabla.has_key(p[1])):
