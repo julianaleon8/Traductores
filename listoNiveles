@@ -330,13 +330,47 @@ class Print(expresion):
 		self.iden = iden
 	def __str__(self):
 		return "Print(" + "Lienzo= " + str(self.iden) + ")"
+class Using(expresion):
+	def __init__(self,iden):
+		self.iden = iden
+	def __str__(self):
+		return "Using(" + "instruccion" + str(self.iden) + ")End"
+		
+		
+		
+#################################################################
+###                        FUNCIONES EXTRA                    ###
+#################################################################
 
+def mover(aux):
+	global contador
+	count = contador
+	temp = aux
+	
+	if(temp[1] == -2):
+		print 'La variable no puede ser reasignable'
+		exit(1)
+	else:	
+		while(count != -1):
+			temp = aux	
+			if(type(temp) == list):
+				while(type(temp[-1]) == list):
+					if(temp[1] == count):
+						return temp
+					else:
+						temp = temp[-1]
+				if(temp[1] == count):
+					return temp
+			count -= 1
+		print 'variable fuera del alcance' 
+		exit(1)
 
 #################################################################
 ###                  VERIFICACION DE TIPO                     ###
 #################################################################
 
 def evaluar(arbol):
+	global contador
 	if (isinstance(arbol, Impre)):
 		aux1 = arbol.expr1
 		aux2 = arbol.expr2
@@ -412,11 +446,15 @@ def evaluar(arbol):
 				print 'error de sintaxis2 {0} no fue declarada'.format(temp)
 				exit(1)	
 		else:
-			run(aux)
+			run(arbol)
 	elif(isinstance(arbol,With)):
 		temp = arbol.iden
 		temp2 = arbol.num1
 		temp3 = arbol.num2
+		if(isinstance(temp2,OpBin) or isinstance(temp2,OpUn)):
+			temp2 = calcularExprBin(temp2)
+		if(isinstance(temp3,OpBin) or isinstance(temp3,OpUn)):
+			temp3 = calcularExprBin(temp3)
 		if(tabla.has_key(temp)):
 			if(Tipo(temp) == Tipo(temp2) == Tipo(temp3) == 'integer'):
 				run(arbol)
@@ -435,11 +473,18 @@ def evaluar(arbol):
 	elif(isinstance(arbol,Fro)):
 		temp = arbol.num1
 		temp2 = arbol.num2
+		if(isinstance(temp2,OpBin) or isinstance(temp2,OpUn)):
+			temp2 = calcularExprBin(temp2)
+		if(isinstance(temp,OpBin) or isinstance(temp,OpUn)):
+			temp = calcularExprBin(temp)
 		if(Tipo(temp) == Tipo(temp2) == 'integer'):
 			run(arbol)
 		else:
 			print 'Los limites deben ser de tipo integer'
-		
+	elif(isinstance(arbol,Using)):
+		temp = arbol.iden
+		run(temp)
+			
 	
 
 
@@ -447,6 +492,7 @@ def evaluar(arbol):
 def Tipo(aux):
 	if(tabla.has_key(aux)):
 			temp = tabla[aux]
+			temp = mover(temp)
 			temp = temp[0]
 			return temp	
 	elif(type(aux) == int):
@@ -476,7 +522,7 @@ def calcularExprBin(exp):
 			else:
 				temp2 = Tipo(aux2)
 			
-			if(temp == 'integer' and temp2 == 'integer'):
+			if(temp == temp2 == 'integer'):
 				return 'boolean'
 			else:
 				return '1'
@@ -491,7 +537,7 @@ def calcularExprBin(exp):
 			else:
 				temp2 = Tipo(aux2)
 		
-			if(temp == 'integer' and temp2 == 'integer'):
+			if(temp == temp2 == 'integer'):
 				return 'boolean'
 			else:
 				return '1'
@@ -506,7 +552,7 @@ def calcularExprBin(exp):
 			else:
 				temp2 = Tipo(aux2)
 		
-			if(temp == 'integer' and temp2 == 'integer'):
+			if(temp == temp2 == 'integer'):
 				return 'boolean'
 			else:
 				return '1'
@@ -521,7 +567,7 @@ def calcularExprBin(exp):
 			else:
 				temp2 = Tipo(aux2)
 		
-			if(temp == 'integer' and temp2 == 'integer'):
+			if(temp == temp2 == 'integer'):
 				return 'boolean'
 			else:
 				return '1'
@@ -633,26 +679,30 @@ def calcularExprBin(exp):
 
 
 def run(exp):
+	global contador	
 	if(isinstance(exp,OpBin)):
 		a = exp.op1
 		b = exp.op2
-		if(isinstance(a,OpBin) or isinstance(a,OpUn)):
+		if(isinstance(a,OpBin) or isinstance(a,OpUn) or isinstance(a,Using)):
 			f1 = run(a)
 		else:
 			if(tabla.has_key(a)):
 				temp = tabla[a]
+				temp = mover(temp)
 				if(temp[2] == ''):
 					print 'Variable no inicializada {0}'.format(a)
 					exit(1)
 				else:
 					f1 = temp[2]
+					
 			else:
 				f1 = a
-		if(isinstance(b,OpBin) or isinstance(b,OpUn)):
+		if(isinstance(b,OpBin) or isinstance(b,OpUn) or isinstance(b,Using)):
 			f2 = run(b)
 		else:
 			if(tabla.has_key(b)):
 				temp = tabla[b]
+				temp = mover(temp)
 				if(temp[2] == ''):
 					print 'Variable no inicializada {0}'.format(b)
 					exit(1)
@@ -859,6 +909,7 @@ def run(exp):
 			else:
 				if(tabla.has_key(a)):
 					temp = tabla[a]
+					temp = mover(temp)
 					if(temp[2] == ''):
 						print 'Variable no inicializada {0}'.format(a)
 						exit(1)
@@ -878,6 +929,7 @@ def run(exp):
 			else:
 				if(tabla.has_key(a)):
 					temp = tabla[a]
+					temp = mover(temp)
 					if(temp[2] == ''):
 						print 'Variable no inicializada {0}'.format(a)
 						exit(1)
@@ -896,6 +948,7 @@ def run(exp):
 			else:
 				if(tabla.has_key(aux)):
 					temp = tabla[aux]
+					temp = mover(temp)
 					f1 = temp[2]
 				else:
 					f1 = aux
@@ -932,6 +985,7 @@ def run(exp):
 			else:
 				if(tabla.has_key(aux)):
 					temp = tabla[aux]
+					temp = mover(temp)
 					f1 = temp[2]
 				else:
 					f1 = temp[2]
@@ -966,6 +1020,7 @@ def run(exp):
 		temp2 = exp.ex1
 		temp3 = run(temp2)
 		temp4 = tabla[temp]
+		temp4 = mover(temp4)
 		temp4[2] = temp3
 	elif(isinstance(exp,IfElse)):
 		temp = exp.boolean
@@ -1004,20 +1059,27 @@ def run(exp):
 		temp6 = exp.num2
 		temp4 = exp.ex1
 		flag = 0
+		if(isinstance(temp5,OpBin) or isinstance(temp5,OpUn)):
+			temp5 = run(temp5)
+		if(isinstance(temp6,OpBin) or isinstance(temp6,OpUn)):
+			temp6 = run(temp6)	
 		if(tabla.has_key(iden)):
 			guardar = tabla[iden]
+			guardar = mover(guardar)
 			guardar2 = guardar[0]
 			guardar = guardar[2]
 			flag = 1
-		tabla[iden] = ['integer',0,'']
-		if(Tipo(iden) == Tipo(temp6) == Tipo(temp5) == 'integer'):
+		tabla[iden] = ['integer',-2,'']
+		if(Tipo(temp6) == Tipo(temp5) == 'integer'):
 			if(tabla.has_key(temp5)):
 				temp1 = tabla[temp5]
+				temp1 = mover(temp1)
 				aux = temp1[2]
 			else:
 				aux = temp5
 			if(tabla.has_key(temp6)):
 				temp2 = tabla[temp6]
+				temp2 = mover(temp2)
 				aux2 = temp2[2]
 			else:
 				aux2 = temp6
@@ -1029,6 +1091,7 @@ def run(exp):
 						run(temp4)
 						temp[2] = temp[2] + 1
 						aux = temp[2]
+						
 				else:
 					print 'Los limites no concuerdan'
 			elif(type(temp6) != int):		
@@ -1070,14 +1133,20 @@ def run(exp):
 		temp2 = exp.num1
 		temp3 = exp.num2
 		temp4 = exp.ex1
+		if(isinstance(temp2,OpBin) or isinstance(temp2,OpUn)):
+			temp2 = run(temp2)
+		if(isinstance(temp3,OpBin) or isinstance(temp3,OpUn)):
+			temp3 = run(temp3)
 		if(Tipo(temp2) == Tipo(temp3) == 'integer'):
 			if(tabla.has_key(temp2)):
 				temp = tabla[temp2]
+				temp = mover(temp)
 				aux = temp[2]
 			else:
 				aux = temp2
 			if(tabla.has_key(temp3)):
 				temp = tabla[temp3]
+				temp = mover(temp)
 				aux2 = temp[2]
 			else:
 				aux2 = temp3
@@ -1110,6 +1179,9 @@ def run(exp):
 					aux = aux + 1
 			else:
 					print 'Los limites no concuerdan'
+		else:
+			print 'Los limites deben ser integer'
+			exit(1)
 	elif(isinstance(exp,While)):
 		aux1 = exp.boolean
 		aux2 = exp.ex1
@@ -1126,17 +1198,33 @@ def run(exp):
 			
 	elif(isinstance(exp,Read)):
 		aux = exp.iden
-		temp = tabla[aux]
 		temp3 = raw_input()
-		temp3 = int(temp3)
-		if(type(temp3) == int):
-			temp[2] = temp3
+		if (tabla.has_key(aux)):
+			
+			temp = tabla[aux]
+			temp = mover(temp)	
+			if (temp3== ('true' or 'false')):
+				if(temp[0] == 'boolean'):
+					temp[2] = temp3
+				else:
+					print 'La entrada es de booleanos'
+					exit(1)
+			elif(type(int(temp3)) == int):
+				temp[2] = temp3
+			else:
+				print 'La entrada es de enteros o booleanos'
+				exit(1)
 		else:
-			print 'La entrada es de enteros'
+			print 'Variable no declarada {0}'.format(aux)
 			exit(1)
 	elif(isinstance(exp,Print)):
 		aux = exp.iden
-		temp = run(aux)
+		if(aux[0] != '<'):
+			aux = tabla[aux]
+			aux1 = mover(aux)
+			temp = aux[2]
+		else:
+			temp = run(aux)
 		if(temp[0] == '<'):
 			if(temp != '<empty>'):
 				print temp[1:len(temp)-1]
@@ -1153,9 +1241,15 @@ def run(exp):
 		b = exp.expr2
 		run(a)
 		run(b)
+	elif(isinstance(exp,Using)):
+		contador += 1
+		temp = exp.iden
+		run(temp)
+		contador -= 1
 	else:
 		if(tabla.has_key(exp)):
 			temp = tabla[exp]
+			temp = mover(temp)
 			if(temp[2] == ''):
 				print 'Variable {0} no inicializada'.format(exp)
 				exit(1)
@@ -1196,8 +1290,7 @@ def p_expr(p):
 		temp = []
 		#print 'holas'
 		#contador += 1
-		print contador
-		p[0] = p[4]
+		p[0] = Using(p[4])
 		for i in tabla:
 			count = contador
 			aux = tabla[i]
@@ -1220,8 +1313,8 @@ def p_instr(p):
 		 	   | TkIf booleana TkThen instr TkElse instr TkDone
 		 	   | TkIf booleana TkThen instr TkDone
 		 	   | TkWhile booleana TkRepeat instr TkDone
-		 	   | TkWith TkIdent TkFrom InNum TkTo InNum TkRepeat instr TkDone
-		 	   | TkFrom InNum TkTo InNum TkRepeat instr TkDone 
+		 	   | TkWith TkIdent TkFrom arit TkTo arit TkRepeat instr TkDone
+		 	   | TkFrom arit TkTo arit TkRepeat instr TkDone 
 		 	   | TkPrint TkIdent
 		 	   | TkPrint TkLienzo
 		 	   | TkRead TkIdent 
@@ -1231,14 +1324,16 @@ def p_instr(p):
 	
 	global contador
 	if (len(p)== 4):
-	    if (p[2] == ':='):
-	    	if(tabla.has_key(p[1])):
-	    		p[0] = Asig(p[1] , p[3])
-	    	else:
-	    		print 'errorde sintaxis {0} no fue declarada'.format(p[1])
-	    		exit(1)	
-	    elif(p[2] == ';'):
+		if (p[2] == ':='):
+				if(tabla.has_key(p[1])):
+					p[0] = Asig(p[1] , p[3])
+				else:
+					print 'errorde sintaxis {0} no fue declarada'.format(p[1])
+					exit(1)
+		elif(p[2] == ';'):
 			p[0] = Impre(p[1],p[3])
+		else:
+			p[0]=p[2]
 	elif(len(p) == 8):
 	    if(p[1] == 'if'):
 	    	p[0] = IfElse(p[2],p[4],p[6])
@@ -1249,6 +1344,8 @@ def p_instr(p):
 	    	p[0] = While( p[2] , p[4])
 	    elif(p[1] == 'if'):
 	    	p[0] = IfS(p[2],p[4])
+	    else:
+	    	p[0] = Using(p[4])
 	elif(len(p) == 10 ):
 			p[0] = With(p[2],p[4],p[6],p[8])
 	elif(len(p) == 3):
@@ -1272,10 +1369,8 @@ def p_Declar(p):
 				  
 	global temp
 	global contador
-	print contador
 	cont = 0
 	if(len(p) == 4):
-
 		if(p[2] == ','):
 			temp.append(p[3])
 			p[0] = p[1]
@@ -1347,14 +1442,9 @@ def p_Tipo(p):
 				| TkCanvas '''
 	p[0] = p[1]
 
-def p_InNum(p):
-	''' InNum : TkNum
-				 | TkIdent '''
-	p[0] = p[1]
-
-
 def p_arit(p):
-	''' arit : arit operatorA arit
+	''' arit : arit operatorA TkIdent
+				| arit operatorA TkNum
 		 		| TkResta arit
 		 		| TkParAbre arit TkParCierra
 		 		| TkNum
@@ -1386,7 +1476,10 @@ def p_expbin(p):
 	p[0] = p[1]
 
 def p_booleana(p):
-	''' booleana : booleana operatorB booleana
+	''' booleana : booleana operatorB TkTrue
+					 | booleana operatorB TkFalse
+					 | booleana operatorB arit
+					 | booleana operatorB lienzo
 		    		 | TkParAbre booleana TkParCierra
 		    		 | TkTrue
 		    		 | TkFalse
@@ -1436,7 +1529,8 @@ def p_booleana(p):
 			p[0] = p[1]
 
 def p_lienzo(p):
-	''' lienzo : lienzo operatorL lienzo 
+	''' lienzo : lienzo operatorL TkIdent
+			  | lienzo operatorL TkLienzo
 		   	  | TkParAbre lienzo TkParCierra
 		   	  | TkRot lienzo 
 		   	  | lienzo TkTras 
@@ -1503,6 +1597,7 @@ else:
 	fil = open(fil,"r")
 	archi = fil.read()
 	arbol = parser.parse(archi)
+	contador = 0
 	evaluar(arbol)
 print tabla
 #print arbol
