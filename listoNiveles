@@ -396,119 +396,11 @@ def es_vacio(tpl,var):
 # Funcion para evaluar si los tipos de las variables son validos
 def evaluar(arbol):
 	global contador
-	if (isinstance(arbol, Impre)):
-		aux1 = arbol.expr1
-		aux2 = arbol.expr2
-		evaluar(aux1)
-		evaluar(aux2)
-		
-	elif(isinstance(arbol,Asig)):
-		aux2 = arbol.ex1
-		aux1 = arbol.iden
-		temp2 = Tipo(aux1)
-		temp3 = calcularExprBin(aux2)
-		if(temp2 == temp3):
-			pass
-		else:
-			print 'error de tipo {0}'.format(temp2)
-	elif(isinstance(arbol,IfElse)):
-		aux1 = arbol.boolean
-		aux2 = arbol.ex1
-		aux3 = arbol.ex2
-		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
-			temp = calcularExprBin(aux1)
-		else:
-			temp = Tipo(aux1)
-		if(temp == 'boolean'):
-			pass
-		else:
-			print 'error de tipo {0}'.format(temp)
-	elif(isinstance(arbol,IfS)):
-		aux1 = arbol.boolean
-		aux2 = arbol.ex1
-		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
-			temp = calcularExprBin(aux1)
-		else:
-			temp = Tipo(aux1)
-		if(temp == 'boolean'):
-			pass
-		else:
-			print 'error de tipo {0}'.format(temp)
-	elif(isinstance(arbol,While)):
-		aux1 = arbol.boolean
-		aux2 = arbol.ex1
-		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
-			temp = calcularExprBin(aux1)
-		else:
-			temp = Tipo(aux1)
-		if(temp == 'boolean'):
-				pass
-		else:
-			print 'error de tipo {0}'.format(temp)
-	elif(isinstance(arbol,Read)):
-		temp = arbol.iden
-		if(tabla.has_key(temp)):
-			aux1 = Tipo(temp)
-			if(aux1 == 'integer'):
-				pass
-			else:
-				print 'La variable1 [{0}] debe ser de tipo entera'.format(temp)
-				exit(1)
-		else:
-			print 'error de sintaxis {0} no fue declarada'.format(temp)
-			exit(1)
-	elif(isinstance(arbol,Print)):
-		temp = arbol.iden
-		if(temp[0] != '<'):
-			if(tabla.has_key(temp)):
-				temp1 = Tipo(temp)
-				if(temp1 == 'canvas'):
-					pass
-				else:
-					print 'La variable [{0}] debe ser de tipo canvas'.format(temp)
-					exit(1)
-			else:
-				print 'error de sintaxis2 {0} no fue declarada'.format(temp)
-				exit(1)	
-		else:
-			run(arbol)
-	elif(isinstance(arbol,With)):
-		temp = arbol.iden
-		temp2 = arbol.num1
-		temp3 = arbol.num2
-		if(isinstance(temp2,OpBin) or isinstance(temp2,OpUn)):
-			temp2 = calcularExprBin(temp2)
-		if(isinstance(temp3,OpBin) or isinstance(temp3,OpUn)):
-			temp3 = calcularExprBin(temp3)
-		if(tabla.has_key(temp)):
-			if(Tipo(temp) == Tipo(temp2) == Tipo(temp3) == 'integer'):
-				pass
-			elif(Tipo(temp) != 'integer'):
-				print 'La variable [{0}] debe ser de tipo entera'.format(temp)
-				exit(1)
-			elif(Tipo(temp2) != integer):
-				print 'La variable [{0}] debe ser de tipo entera'.format(temp2)
-				exit(1)
-			elif(Tipo(temp) != 'integer'):
-				print 'La variable [{0}] debe ser de tipo entera'.format(temp3)
-				exit(1)
-		else:
-			print 'error de sintaxis {0} no fue declarada'.format(p[2])
-			exit(1)
-	elif(isinstance(arbol,Fro)):
-		temp = arbol.num1
-		temp2 = arbol.num2
-		if(isinstance(temp2,OpBin) or isinstance(temp2,OpUn)):
-			temp2 = calcularExprBin(temp2)
-		if(isinstance(temp,OpBin) or isinstance(temp,OpUn)):
-			temp = calcularExprBin(temp)
-		if(Tipo(temp) == Tipo(temp2) == 'integer'):
-			pass
-		else:
-			print 'Los limites deben ser de tipo integer'
-	elif(isinstance(arbol,Using)):
+	if(isinstance(arbol,Using)):
 		temp = arbol.iden
 		run(temp)
+	else:
+		run(arbol)
 			
 #
 #Funcion para el calcular de que tipo es la variable que se esta usando
@@ -1079,13 +971,6 @@ def run(exp):
 		temp4 = tabla[temp]
 		temp4 = mover(temp4)
 		if(temp4[0] == p1):
-			if(temp4[0] == 'canvas' and temp4[2] == ''):
-				if(temp2 == '<empty>'):
-					temp3 = run(temp2)
-					temp4[2] = temp3
-				else:
-					print 'La variable {0} debe ser inicializada en vacio'.format(temp)
-					exit(1)
 			temp3 = run(temp2)
 			temp4[2] = temp3
 		else:
@@ -1401,7 +1286,7 @@ def p_expr(p):
 	
 def p_instr(p):
 	'''instr : 	instr TkPuntoYComa instr
-			   | TkIdent TkAsignacion expbin
+			   | TkIdent TkAsignacion booleana
 		 	   | TkIf booleana TkThen instr TkElse instr TkDone
 		 	   | TkIf booleana TkThen instr TkDone
 		 	   | TkWhile booleana TkRepeat instr TkDone
@@ -1564,12 +1449,6 @@ def p_arit(p):
 		p[0] = Menos(p[2])
 	else:
 		p[0] = p[1]
-
-def p_expbin(p):
-	''' expbin : arit
-	  		  	  | booleana
-			  	  | lienzo '''
-	p[0] = p[1]
 
 def p_operatorB(p):
 	''' operatorB : TkMenor
