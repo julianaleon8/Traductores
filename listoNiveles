@@ -141,8 +141,8 @@ t_TkAsignacion = r':='
 
 
 precedence = (
-	 
-	 ('left','TkConjuncion','TkDisyuncion'),
+	 ('left','TkDisyuncion'), 
+	 ('left','TkConjuncion'),
 	 ('left','TkHorConcat','TkVerConcat'),
 	 ('left','TkRot'),
 	 ('right','TkTras'),
@@ -1534,14 +1534,6 @@ def p_Tipo(p):
 				| TkCanvas '''
 	p[0] = p[1]
 
-#def p_operatorA(p):
-#	''' operatorA : TkSuma
-#					  | TkResta
-#					  | TkMult
-#					  | TkDiv
-#					  | TkMod '''
-#	p[0] = p[1]
-
 def p_arit(p):
 	''' arit : arit TkDiv arit
 		 		| TkResta arit
@@ -1586,8 +1578,7 @@ def p_operatorB(p):
 					  | TkMayorIgual
 					  | TkIgual
 					  | TkDesIgual 
-					  | TkConjuncion
-					  | TkDisyuncion '''
+					 '''
 	p[0] = p[1]
 
 def p_booleana(p):
@@ -1651,13 +1642,20 @@ def p_booleana(p):
 		else:
 			p[0] = p[1]
 
+
+#def p_operatorL(p):
+#	''' operatorL : TkHorConcat
+#					  | TkVerConcat '''
+#	p[0] = p[1] 	
+
 def p_lienzo(p):
-	''' lienzo : lienzo operatorL lienzo
+	''' lienzo : lienzo  TkHorConcat lienzo
 		   	  | TkParAbre lienzo TkParCierra
 		   	  | TkRot lienzo 
 		   	  | lienzo TkTras 
 		   	  | TkLienzo
-		   	  | TkIdent '''
+		   	  | TkIdent 
+		   	  | lienzo TkVerConcat lienzo'''
 
 	if len(p) == 4:
 		if p[2] == ':':
@@ -1682,11 +1680,7 @@ def p_lienzo(p):
 					exit(1)
 		p[0] = p[1]
 
-
-def p_operatorL(p):
-	''' operatorL : TkHorConcat
-					  | TkVerConcat '''
-	p[0] = p[1] 			
+		
 
 def p_error(p):
 	print "Error de sintaxis " + p.type +" " +  p.value
