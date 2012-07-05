@@ -144,7 +144,7 @@ precedence = (
      ('left', 'TkSuma', 'TkResta'),
   	 ('left','TkMult','TkDiv','TkMod'),
   	 ('right','TkNegacion'),
-  	 ('left','TkIgual','TkDesIgual')
+  	 ('left','TkIgual','TkDesIgual'),
 )
 
 
@@ -340,7 +340,8 @@ class Using(expresion):
 #################################################################
 ###                        FUNCIONES EXTRA                    ###
 #################################################################
-
+#
+# 
 def mover(aux):
 	global contador
 	count = contador
@@ -362,27 +363,29 @@ def mover(aux):
 			if(temp[1] == count):
 				return temp
 		count -= 1
-	print 'variable fuera del alcance' 
+	print 'Variable fuera del alcance' 
 	exit(1)
 		
-		
+#
+#	
 def detectar (bas):
 	global contador
 	if(tabla.has_key(bas)):
 		aux = tabla[bas]
 		if(aux[1] == -(contador*2)-1):
-			print 'Variable24 no reasignable'
+			print 'Variable {0} no reasignable'.format(bas)
 			exit(1)
 	
 	else:
-		print 'Variable43 {0} no declarada'.format(bas)
+		print 'Variable {0} no declarada'.format(bas)
 		exit(1)
 			
 
 #################################################################
 ###                  VERIFICACION DE TIPO                     ###
 #################################################################
-
+##
+# Funcion para evaluar si los tipos de las variables son validos
 def evaluar(arbol):
 	global contador
 	if (isinstance(arbol, Impre)):
@@ -500,7 +503,9 @@ def evaluar(arbol):
 		#contador = 0
 		run(temp)
 			
-
+#
+#Funcion para el calcular de que tipo es la variable que se esta usando
+#
 def Tipo(aux):
 	if(tabla.has_key(aux)):
 			temp = tabla[aux]
@@ -518,6 +523,7 @@ def Tipo(aux):
 			print 'error de Tipo sintaxis {0} no fue declarada'.format(aux)
 			exit(1)
 
+#Funcion para el calcular de que tipo es la variable que se esta usando
 
 def calcularExprBin(exp):
 	if(isinstance(exp,OpBin)):
@@ -775,6 +781,8 @@ def run(exp):
 			else:
 				print 'error de tipo'
 				exit(1)
+	# concatenacion horizontal se revisa si los operandos tiene la misma altura
+	# y si son atomicos o no
 		if(isinstance(exp,ConcatHor)):
 			if(f1[0] == f2[0] == '<'):
 				ret = []
@@ -888,7 +896,7 @@ def run(exp):
 						ret.append(i)
 					return ret
 				else:
-					print 'Dimension 4 de lienzos diferentes'
+					print 'Dimension de lienzos diferentes'
 					exit(1)
 			elif(f2[0] == '<'):
 				ret = []
@@ -1284,7 +1292,7 @@ def run(exp):
 			else:
 				print
 		else:
-			print 'Debe ser canvas'
+			print 'la variable {0} debe ser canvas'.format(aux5)
 			exit(1)  
 					
 	elif(isinstance(exp,Impre)):
@@ -1335,15 +1343,9 @@ def p_expr(p):
 	global temp
 		
 	if len(p) == 4:
-		if(p[2] == ';'):
-			p[0] = Impre(p[1],p[3])
-		else:
-			p[0] = p[2]
-			#contador += 1
-	
+		p[0]= p[2]
 	elif(len(p) == 6):
 		temp = []
-		#print 'holas'
 		p[0] = Using(p[4])
 		print contador
 		for i in tabla:
@@ -1497,13 +1499,25 @@ def p_Tipo(p):
 				| TkCanvas '''
 	p[0] = p[1]
 
+#def p_operatorA(p):
+#	''' operatorA : TkSuma
+#					  | TkResta
+#					  | TkMult
+#					  | TkDiv
+#					  | TkMod '''
+#	p[0] = p[1]
+
 def p_arit(p):
-	''' arit : arit operatorA TkIdent
-				| arit operatorA TkNum
+	''' arit : arit TkDiv arit
 		 		| TkResta arit
 		 		| TkParAbre arit TkParCierra
 		 		| TkNum
-		 		| TkIdent '''
+		 		| TkIdent 
+		 		| arit TkMult arit
+		 		| arit TkSuma arit
+		 		| arit TkResta arit
+		 		| arit TkMod arit
+		 		 '''
 
 	if(len(p) == 4):
 		if(p[2] == '+'):
@@ -1530,9 +1544,19 @@ def p_expbin(p):
 			  	  | lienzo '''
 	p[0] = p[1]
 
+def p_operatorB(p):
+	''' operatorB : TkMenor
+					  | TkMenorIgual
+					  | TkMayor
+					  | TkMayorIgual
+					  | TkIgual
+					  | TkDesIgual 
+					  | TkConjuncion
+					  | TkDisyuncion '''
+	p[0] = p[1]
+
 def p_booleana(p):
-	''' booleana : booleana operatorB TkTrue
-					 | booleana operatorB TkFalse
+	''' booleana : booleana TkMenor booleana
 					 | booleana operatorB arit
 					 | booleana operatorB lienzo
 		    		 | TkParAbre booleana TkParCierra
@@ -1540,7 +1564,16 @@ def p_booleana(p):
 		    		 | TkFalse
 				 	 | booleana TkNegacion
 				 	 | arit
-				 	 | lienzo '''
+				 	 | lienzo 
+				 	 | booleana TkMenorIgual booleana
+					 | booleana TkMayor booleana
+					 | booleana TkMayorIgual booleana
+					 | booleana TkIgual booleana
+					 | booleana TkDesIgual booleana
+					 | booleana TkConjuncion booleana
+					 | booleana TkDisyuncion booleana
+					 
+					'''
 #| TkNegacion booleana
 
 	if(len(p) == 4):
@@ -1584,8 +1617,7 @@ def p_booleana(p):
 			p[0] = p[1]
 
 def p_lienzo(p):
-	''' lienzo : lienzo operatorL TkIdent
-			  | lienzo operatorL TkLienzo
+	''' lienzo : lienzo operatorL lienzo
 		   	  | TkParAbre lienzo TkParCierra
 		   	  | TkRot lienzo 
 		   	  | lienzo TkTras 
@@ -1615,24 +1647,6 @@ def p_lienzo(p):
 					exit(1)
 		p[0] = p[1]
 
-def p_operatorA(p):
-	''' operatorA : TkSuma
-					  | TkResta
-					  | TkMult
-					  | TkDiv
-					  | TkMod '''
-	p[0] = p[1]
-
-def p_operatorB(p):
-	''' operatorB : TkMenor
-					  | TkMenorIgual
-					  | TkMayor
-					  | TkMayorIgual
-					  | TkIgual
-					  | TkDesIgual 
-					  | TkConjuncion
-					  | TkDisyuncion '''
-	p[0] = p[1]
 
 def p_operatorL(p):
 	''' operatorL : TkHorConcat
