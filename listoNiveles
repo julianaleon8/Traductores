@@ -186,7 +186,6 @@ class Impre2:
 class expresion : pass
 
 
-
 class OpBin(expresion):
 	def __init__(self,op1,op2):
 		self.op1 = op1
@@ -346,24 +345,39 @@ def mover(aux):
 	global contador
 	count = contador
 	temp = aux
-	
-	if(temp[1] == -(contador*2)-1):
-		print 'La variable no puede ser reasignable'
-		exit(1)
-	else:	
-		while(count != -1):
-			temp = aux	
-			if(type(temp) == list):
-				while(type(temp[-1]) == list):
-					if(temp[1] == count):
-						return temp
-					else:
-						temp = temp[-1]
+	print temp
+	print (-(contador*2)-1)
+		
+	while(count != -1):
+		temp = aux	
+		if(type(temp) == list):
+			while(type(temp[-1]) == list):
+				print 'hala'
 				if(temp[1] == count):
 					return temp
-			count -= 1
-		print 'variable fuera del alcance' 
+				elif(temp[1] == (-(contador*2)-1)):
+					return temp
+				else:
+					temp = temp[-1]
+			if(temp[1] == count):
+				return temp
+		count -= 1
+	print 'variable fuera del alcance' 
+	exit(1)
+		
+		
+def detectar (bas):
+	global contador
+	if(tabla.has_key(bas)):
+		aux = tabla[bas]
+		if(aux[1] == -(contador*2)-1):
+			print 'Variable24 no reasignable'
+			exit(1)
+	
+	else:
+		print 'Variable43 {0} no declarada'.format(bas)
 		exit(1)
+			
 
 #################################################################
 ###                  VERIFICACION DE TIPO                     ###
@@ -483,11 +497,9 @@ def evaluar(arbol):
 			print 'Los limites deben ser de tipo integer'
 	elif(isinstance(arbol,Using)):
 		temp = arbol.iden
-		pass
+		#contador = 0
+		run(temp)
 			
-	
-
-
 
 def Tipo(aux):
 	if(tabla.has_key(aux)):
@@ -790,7 +802,7 @@ def run(exp):
 						ret.append(i)
 					return ret
 				else:
-					print 'Dimension2 de lienzos diferentes'
+					print 'Dimension 2 de lienzos diferentes'
 					exit(1)
 			elif(f2[0] == '<'):
 				count = 0
@@ -807,7 +819,7 @@ def run(exp):
 						pass
 					return ret
 				else:
-					print 'Dimension1 de lienzos diferentes'
+					print 'Dimension 1 de lienzos diferentes'
 					exit(1)
 			else:
 				count1 = 0
@@ -876,7 +888,7 @@ def run(exp):
 						ret.append(i)
 					return ret
 				else:
-					print 'Dimension4 de lienzos diferentes'
+					print 'Dimension 4 de lienzos diferentes'
 					exit(1)
 			elif(f2[0] == '<'):
 				ret = []
@@ -1039,9 +1051,14 @@ def run(exp):
 				fin.append('\n')
 			del fin[-1]
 			return fin
+
+
+
+#ejecucion de las instrucciones			
 	elif(isinstance(exp,Asig)):
 		temp = exp.iden
 		temp2 = exp.ex1
+		detectar(temp)
 		p1 = calcularExprBin(temp2)
 		temp4 = tabla[temp]
 		temp4 = mover(temp4)
@@ -1098,7 +1115,7 @@ def run(exp):
 			tabla[iden] = a
 			flag = 1
 		else:
-			tabla[iden] = ['integer',-(contador*2)-1,'']
+			tabla[iden] = ['integer',-(contador*2)-1,'',[]]
 		if(Tipo(temp6) == Tipo(temp5) == 'integer'):
 			if(tabla.has_key(temp5)):
 				temp1 = tabla[temp5]
@@ -1228,42 +1245,48 @@ def run(exp):
 		aux = exp.iden
 		temp3 = raw_input()
 		if (tabla.has_key(aux)):
-			
-			temp = tabla[aux]
-			temp = mover(temp)	
-			if (temp3== ('true' or 'false')):
-				if(temp[0] == 'boolean'):
-					temp[2] = temp3
+			try:
+				temp = tabla[aux]
+				temp = mover(temp)	
+				if (temp3== 'true' or  temp3 == 'false'):
+					if(temp[0] == 'boolean'):
+						temp[2] = temp3
+					else:
+						exit(1)
+				elif(type(int(temp3)) == int):
+					temp[2] = int(temp3)
 				else:
-					print 'La entrada es de booleanos'
+					print 'La entrada es de enteros o booleanos'
 					exit(1)
-			elif(type(int(temp3)) == int):
-				temp[2] = temp3
-			else:
-				print 'La entrada es de enteros o booleanos'
-				exit(1)
+			except:
+				print 'Entrada incorrecta'
 		else:
 			print 'Variable no declarada {0}'.format(aux)
 			exit(1)
 	elif(isinstance(exp,Print)):
-		aux = exp.iden
-		if(aux[0] != '<'):
-			aux = tabla[aux]
+	
+		aux5 = exp.iden
+		if(aux5[0] != '<'):
+			aux = tabla[aux5]
 			aux1 = mover(aux)
 			temp = aux[2]
-		else:
-			temp = run(aux)
-		if(temp[0] == '<'):
-			if(temp != '<empty>'):
-				print temp[1:len(temp)-1]
+			if( Tipo(aux5)== 'canvas'):
+				for i in temp:
+					sys.stdout.write(i)
+				print
 			else:
-				print 
-		else:
-			for i in temp:
-				sys.stdout.write(i)
-			print 
+				print 'la variable {0} debe ser Canvas'.format(exp.iden)
+				exit(1)
 		
-			
+		elif(Tipo(aux5) == 'canvas'):
+			if(aux5 != '<empty>'):
+				print aux5[1:len(aux5)-1]
+			else:
+				print
+		else:
+			print 'Debe ser canvas'
+			exit(1)  
+					
 	elif(isinstance(exp,Impre)):
 		a = exp.expr1
 		b = exp.expr2
@@ -1274,7 +1297,9 @@ def run(exp):
 		temp = exp.iden
 		run(temp)
 		contador -= 1
-	else:
+		
+# si se llega a caso base se devuelve su valor para la ejecucion
+	else:		
 		if(tabla.has_key(exp)):
 			temp = tabla[exp]
 			temp = mover(temp)
@@ -1304,21 +1329,23 @@ temp = []
 
 def p_expr(p):
 	''' expr : TkUsing Bloque TkBegin instr TkEnd
-				| expr TkPuntoYComa expr 
 				| TkBegin instr TkEnd
 				  '''
 	global contador
 	global temp
+		
 	if len(p) == 4:
 		if(p[2] == ';'):
 			p[0] = Impre(p[1],p[3])
 		else:
 			p[0] = p[2]
+			#contador += 1
+	
 	elif(len(p) == 6):
 		temp = []
 		#print 'holas'
-		#contador += 1
 		p[0] = Using(p[4])
+		print contador
 		for i in tabla:
 			count = contador
 			aux = tabla[i]
@@ -1443,8 +1470,7 @@ def p_Declar(p):
 					aux3 = [p[5],contador,'']
 					aux.append(aux3)
 			else:
-				print 'hola'
-		
+			
 				lista = [p[5],contador,'']
 				tabla[i] = lista
 			
@@ -1462,7 +1488,7 @@ def p_Declar(p):
 					exit(1)
 				else:
 				
-					aux.append(p[1])
+					p[0]=p[1]
 		else:
 					p[0]=p[1]
 def p_Tipo(p):
@@ -1626,8 +1652,8 @@ else:
 	fil = open(fil,"r")
 	archi = fil.read()
 	arbol = parser.parse(archi)
-	contador = -1
-	run(arbol)
+	contador = 0
+	evaluar(arbol)
 print tabla
 #print arbol
 
