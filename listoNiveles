@@ -100,9 +100,13 @@ def column(input,token):
 
 t_ignore = ' \t'
 
+fail = 0
+
 def t_error(t):
 	print ("Error: Caracter inesperado %s en la fila %d columna %s " % (t.value[0],t.lineno,column(archi,t)))
 	lexer.skip(1)
+	global fail
+	fail = 1
 
 # valores de los tokens simples
 
@@ -345,14 +349,11 @@ def mover(aux):
 	global contador
 	count = contador
 	temp = aux
-	print temp
-	print (-(contador*2)-1)
 		
 	while(count != -1):
 		temp = aux	
 		if(type(temp) == list):
 			while(type(temp[-1]) == list):
-				print 'hala'
 				if(temp[1] == count):
 					return temp
 				elif(temp[1] == (-(contador*2)-1)):
@@ -371,13 +372,18 @@ def detectar (bas):
 	if(tabla.has_key(bas)):
 		aux = tabla[bas]
 		if(aux[1] == -(contador*2)-1):
-			print 'Variable24 no reasignable'
+			print 'Variable no reasignable'
 			exit(1)
 	
 	else:
-		print 'Variable43 {0} no declarada'.format(bas)
+		print 'Variable {0} no declarada'.format(bas)
 		exit(1)
 			
+			
+def es_vacio(tpl,var):
+	if(tpl[2] == ''):
+		print 'Variable {0} no inicilizada'.format(var)
+		exit(1)
 
 #################################################################
 ###                  VERIFICACION DE TIPO                     ###
@@ -444,7 +450,7 @@ def evaluar(arbol):
 				print 'La variable1 [{0}] debe ser de tipo entera'.format(temp)
 				exit(1)
 		else:
-			print 'errorde sintaxis {0} no fue declarada'.format(temp)
+			print 'error de sintaxis {0} no fue declarada'.format(temp)
 			exit(1)
 	elif(isinstance(arbol,Print)):
 		temp = arbol.iden
@@ -482,7 +488,7 @@ def evaluar(arbol):
 				print 'La variable [{0}] debe ser de tipo entera'.format(temp3)
 				exit(1)
 		else:
-			print 'error de sintaxis3 {0} no fue declarada'.format(p[2])
+			print 'error de sintaxis {0} no fue declarada'.format(p[2])
 			exit(1)
 	elif(isinstance(arbol,Fro)):
 		temp = arbol.num1
@@ -497,7 +503,6 @@ def evaluar(arbol):
 			print 'Los limites deben ser de tipo integer'
 	elif(isinstance(arbol,Using)):
 		temp = arbol.iden
-		#contador = 0
 		run(temp)
 			
 
@@ -505,6 +510,7 @@ def Tipo(aux):
 	if(tabla.has_key(aux)):
 			temp = tabla[aux]
 			temp = mover(temp)
+			es_vacio(temp,aux)
 			temp = temp[0]
 			return temp	
 	elif(type(aux) == int):
@@ -802,7 +808,7 @@ def run(exp):
 						ret.append(i)
 					return ret
 				else:
-					print 'Dimension 2 de lienzos diferentes'
+					print 'Dimension de lienzos diferentes'
 					exit(1)
 			elif(f2[0] == '<'):
 				count = 0
@@ -819,7 +825,7 @@ def run(exp):
 						pass
 					return ret
 				else:
-					print 'Dimension 1 de lienzos diferentes'
+					print 'Dimension de lienzos diferentes'
 					exit(1)
 			else:
 				count1 = 0
@@ -854,7 +860,7 @@ def run(exp):
 					return ret
 							
 				else:
-					print 'Dimension3 de lienzos diferentes'
+					print 'Dimension de lienzos diferentes'
 					exit(1)
 		if(isinstance(exp,ConcatVer)):
 			if(f1[0] == f2[0] == '<'):
@@ -888,7 +894,7 @@ def run(exp):
 						ret.append(i)
 					return ret
 				else:
-					print 'Dimension 4 de lienzos diferentes'
+					print 'Dimension de lienzos diferentes'
 					exit(1)
 			elif(f2[0] == '<'):
 				ret = []
@@ -1063,6 +1069,13 @@ def run(exp):
 		temp4 = tabla[temp]
 		temp4 = mover(temp4)
 		if(temp4[0] == p1):
+			if(temp4[0] == 'canvas' and temp4[2] == ''):
+				if(temp2 == '<empty>'):
+					temp3 = run(temp2)
+					temp4[2] = temp3
+				else:
+					print 'La variable {0} debe ser inicializada en vacio'.format(temp)
+					exit(1)
 			temp3 = run(temp2)
 			temp4[2] = temp3
 		else:
@@ -1075,6 +1088,11 @@ def run(exp):
 		if(isinstance(temp,OpBin) or isinstance(temp,OpUn)):
 			temp3 = calcularExprBin(temp)
 		else:
+			if(tabla.has_key(temp)):
+				tem = tabla[temp]
+				tem = mover(tem)
+				es_vacio(tem,temp)
+				temp3 = Tipo(temp)
 			temp3 = Tipo(temp)
 		if(temp3 == 'boolean'):
 			temp3 = run(temp)
@@ -1091,6 +1109,11 @@ def run(exp):
 		if(isinstance(temp1,OpBin) or isinstance(temp1,OpUn)):
 			temp = calcularExprBin(temp1)
 		else:
+			if(tabla.has_key(temp1)):
+				temp = tabla[temp1]
+				temp = mover(temp)
+				es_vacio(temp,temp1)
+				temp = Tipo(temp1)
 			temp = Tipo(temp1)
 		if(temp == 'boolean'):
 			temp = run(temp1)
@@ -1120,12 +1143,14 @@ def run(exp):
 			if(tabla.has_key(temp5)):
 				temp1 = tabla[temp5]
 				temp1 = mover(temp1)
+				es_vacio(temp1,temp5)
 				aux = temp1[2]
 			else:
 				aux = temp5
 			if(tabla.has_key(temp6)):
 				temp2 = tabla[temp6]
 				temp2 = mover(temp2)
+				es_vacio(temp2,temp6)
 				aux2 = temp2[2]
 			else:
 				aux2 = temp6
@@ -1186,12 +1211,14 @@ def run(exp):
 			if(tabla.has_key(temp2)):
 				temp = tabla[temp2]
 				temp = mover(temp)
+				es_vacio(temp,temp2)
 				aux = temp[2]
 			else:
 				aux = temp2
 			if(tabla.has_key(temp3)):
 				temp = tabla[temp3]
 				temp = mover(temp)
+				es_vacio(temp,temp3)
 				aux2 = temp[2]
 			else:
 				aux2 = temp3
@@ -1233,6 +1260,11 @@ def run(exp):
 		if(isinstance(aux1,OpBin) or isinstance(aux1,OpUn)):
 			aux = calcularExprBin(aux1)
 		else:
+			if(tabla.has_key(aux1)):
+				temp = tabla[aux1]
+				temp = mover(temp)
+				es_vacio(temp,aux1)
+				aux = Tipo(aux1)
 			aux = Tipo(aux1)
 		if(aux == 'boolean'):
 			while(run(aux1) == 'true' or run(aux1) == True):
@@ -1260,6 +1292,7 @@ def run(exp):
 					exit(1)
 			except:
 				print 'Entrada incorrecta'
+				exit(1)
 		else:
 			print 'Variable no declarada {0}'.format(aux)
 			exit(1)
@@ -1269,6 +1302,7 @@ def run(exp):
 		if(aux5[0] != '<'):
 			aux = tabla[aux5]
 			aux1 = mover(aux)
+			es_vacio(aux1,aux5)
 			temp = aux[2]
 			if( Tipo(aux5)== 'canvas'):
 				for i in temp:
@@ -1343,9 +1377,7 @@ def p_expr(p):
 	
 	elif(len(p) == 6):
 		temp = []
-		#print 'holas'
 		p[0] = Using(p[4])
-		print contador
 		for i in tabla:
 			count = contador
 			aux = tabla[i]
@@ -1652,8 +1684,9 @@ else:
 	fil = open(fil,"r")
 	archi = fil.read()
 	arbol = parser.parse(archi)
-	contador = 0
-	evaluar(arbol)
+	if(fail != 1):
+		contador = 0
+		evaluar(arbol)
 print tabla
 #print arbol
 
